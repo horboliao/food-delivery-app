@@ -1,5 +1,7 @@
 const {Item, ItemInfo} = require("../models/models");
-const {where} = require("sequelize");
+const uuid = require("uuid")
+const ApiError = require("../error/ApiError");
+const path = require("path");
 
 class ItemController{
     async getAll(req, res) {
@@ -29,18 +31,23 @@ class ItemController{
         return res.json(item)
     }
 
-    /*async create(req, res, next) {
+    async create(req, res, next) {
         try {
-            let {name, price, brandId, typeId, info} = req.body
+            let {name, price, placeId, categoryId, description} = req.body
             const {img} = req.files
-            let fileName = uuid.v4() + ".jpg"
-            img.mv(path.resolve(__dirname, '..', 'static', fileName))
-            const device = await Device.create({name, price, brandId, typeId, img: fileName});
 
-            if (info) {
-                info = JSON.parse(info)
-                info.forEach(i =>
-                    DeviceInfo.create({
+            if(!name||!price||!placeId||!categoryId||!img){
+                return next(ApiError.badRequest("Some parameters are missing"))
+            }
+
+            let fileName = uuid.v4() + ".jpg"
+            await img.mv(path.resolve(__dirname, '..', 'static', fileName))
+            const device = await Item.create({name, price, placeId, categoryId, img: fileName});
+
+            if (description) {
+                description = JSON.parse(description)
+                description.forEach(i =>
+                    ItemInfo.create({
                         title: i.title,
                         description: i.description,
                         deviceId: device.id
@@ -53,7 +60,7 @@ class ItemController{
             next(ApiError.badRequest(e.message))
         }
 
-    }*/
+    }
 }
 
 module.exports = new ItemController()
